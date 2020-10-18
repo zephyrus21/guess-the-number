@@ -1,13 +1,38 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import * as Font from 'expo-font';
+import { AppLoading } from 'expo';
+
 import Header from './Components/Header';
 import StartScreen from './Screens/StartScreen';
 import GameScreen from './Screens/GameScreen';
 import GameOverScreen from './Screens/GameOverScreen';
 
+const fetchFonts = () => {
+    return Font.loadAsync({
+        'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
+        'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf'),
+    });
+};
+
 export default function App() {
     const [userNumber, setUserNumber] = useState();
     const [guessRound, setGuessRound] = useState(0);
+    const [dataLoading, setDataLoading] = useState(false);
+
+    if (!dataLoading) {
+        return (
+            <AppLoading
+                startAsync={fetchFonts}
+                onFinish={() => setDataLoading(true)}
+            />
+        );
+    }
+
+    const configureNewGameHandler = () => {
+        setGuessRound(0);
+        setUserNumber(null);
+    };
 
     const startGameHandler = (selectedNumber) => {
         setUserNumber(selectedNumber);
@@ -25,7 +50,13 @@ export default function App() {
             <GameScreen userChoice={userNumber} onGameOver={gameOverHandler} />
         );
     } else if (guessRound > 0) {
-        content = <GameOverScreen />;
+        content = (
+            <GameOverScreen
+                roundsNumber={guessRound}
+                userNumber={userNumber}
+                onRestart={configureNewGameHandler}
+            />
+        );
     }
 
     return (
